@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: dual-mode-task-manager
+    env: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: APP_DATA_FILE
+        value: /var/data/tasks-db.json
+      - key: PERSIST_DATA
+        value: "true"
+    disks:
+      - name: tasks-data
+        mountPath: /var/data
+        sizeGB: 1

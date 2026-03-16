@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1f63de" />
+    <title>ניהול משימות אישי וצוותי</title>
+    <link rel="icon" type="image/svg+xml" href="/app-icon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=Rubik:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="backdrop" aria-hidden="true"></div>
+    <main class="app-shell">
+      <header class="hero">
+        <div class="brand-lockup">
+          <img src="/app-icon.svg" alt="" class="brand-icon" width="40" height="40" />
+          <p class="brand-name">מרכז משימות אישי וצוותי</p>
+        </div>
+        <p class="eyebrow">ניהול משימות במצב כפול</p>
+        <h1>גם משימות פרטיות וגם משימות צוות, במקום אחד</h1>
+        <p class="subtitle">
+          אפשר לנהל יום עבודה אישי בלי רעש, ובמקביל לנהל משימות צוותיות עם שקיפות מלאה.
+        </p>
+        <div class="hero-meta">
+          <p id="userGreeting" class="greeting"></p>
+          <button type="button" id="themeToggleBtn" class="theme-toggle-btn" aria-pressed="false">מצב כהה</button>
+        </div>
+      </header>
+
+      <section class="stats" id="stats"></section>
+
+      <section class="workspace-grid" id="workspaceGrid">
+        <section class="panel workspace-panel" id="personalPanel" data-workspace-type="personal">
+          <div class="workspace-head">
+            <div>
+              <h2>מרחב אישי</h2>
+              <p class="panel-subtitle">משימות פרטיות ומשימות לעצמך.</p>
+            </div>
+            <div class="workspace-actions">
+              <p class="workspace-count" id="personalCount"></p>
+              <div class="workspace-layout-controls">
+                <button
+                  type="button"
+                  class="workspace-move-btn"
+                  id="personalMoveBtn"
+                  aria-label="שינוי מיקום מרחב אישי"
+                >
+                  החלף מיקום
+                </button>
+                <label class="workspace-width-label" for="personalWidthSelect">
+                  רוחב
+                </label>
+                <select id="personalWidthSelect" class="workspace-width-select" aria-label="רוחב מרחב אישי">
+                  <option value="narrow">צר</option>
+                  <option value="normal" selected>רגיל</option>
+                  <option value="wide">רחב</option>
+                </select>
+              </div>
+              <button
+                type="button"
+                class="collapse-toggle-btn"
+                id="personalToggleBtn"
+                aria-label="צמצום מרחב אישי"
+                aria-expanded="true"
+              >
+                צמצם מרחב
+              </button>
+              <button type="button" class="add-task-btn" id="personalAddBtn" aria-label="הוספת משימה אישית">+</button>
+            </div>
+          </div>
+          <div class="category-board" id="personalWorkspace"></div>
+        </section>
+
+        <section class="panel workspace-panel" id="workPanel" data-workspace-type="team">
+          <div class="workspace-head">
+            <div>
+              <h2>מרחב עבודה</h2>
+              <p class="panel-subtitle">משימות צוות ומעקב עבודה שוטפת.</p>
+            </div>
+            <div class="workspace-actions">
+              <p class="workspace-count" id="workCount"></p>
+              <div class="workspace-layout-controls">
+                <button
+                  type="button"
+                  class="workspace-move-btn"
+                  id="workMoveBtn"
+                  aria-label="שינוי מיקום מרחב עבודה"
+                >
+                  החלף מיקום
+                </button>
+                <label class="workspace-width-label" for="workWidthSelect">
+                  רוחב
+                </label>
+                <select id="workWidthSelect" class="workspace-width-select" aria-label="רוחב מרחב עבודה">
+                  <option value="narrow">צר</option>
+                  <option value="normal" selected>רגיל</option>
+                  <option value="wide">רחב</option>
+                </select>
+              </div>
+              <button
+                type="button"
+                class="collapse-toggle-btn"
+                id="workToggleBtn"
+                aria-label="צמצום מרחב עבודה"
+                aria-expanded="true"
+              >
+                צמצם מרחב
+              </button>
+              <button type="button" class="add-task-btn" id="workAddBtn" aria-label="הוספת משימת עבודה">+</button>
+            </div>
+          </div>
+          <div class="category-board" id="workWorkspace"></div>
+        </section>
+      </section>
+
+      <section class="forms-grid">
+        <form id="workspaceForm" class="panel form-card">
+          <h3>יצירת מרחב עבודה חדש</h3>
+          <label>
+            שם המרחב
+            <input name="name" type="text" minlength="2" placeholder="לדוגמה: צוות מוצר" required />
+          </label>
+          <p class="hint">המרחב האישי כבר קיים עבורך. כאן מוסיפים מרחבי עבודה משותפים.</p>
+          <button type="submit" class="secondary-btn" id="workspaceSubmitBtn">יצירת מרחב</button>
+          <p id="workspaceFeedback" class="feedback" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+
+    <div id="taskModal" class="task-modal is-hidden" aria-hidden="true">
+      <button type="button" id="taskModalBackdrop" class="task-modal-backdrop" aria-label="סגירת חלונית"></button>
+      <div class="task-modal-panel">
+        <form id="taskForm" class="panel form-card task-form-card">
+          <div class="form-title-row">
+            <h3>תפריט משימה חדשה</h3>
+            <button type="button" class="close-task-menu-btn" id="closeTaskMenuBtn" aria-label="סגירת תפריט">סגור</button>
+          </div>
+          <p class="hint">טיפ: משימות במרחב האישי נשמרות פרטיות אוטומטית.</p>
+          <label>
+            כותרת משימה
+            <input name="title" type="text" minlength="2" placeholder="לדוגמה: להכין תוכנית עבודה לשבוע" required />
+          </label>
+          <label>
+            תיאור קצר
+            <textarea name="description" rows="3" placeholder="מה חשוב לזכור בביצוע המשימה?"></textarea>
+          </label>
+          <label>
+            קטגוריה
+            <input name="category" id="categoryInput" list="categoryOptions" placeholder="למשל: עבודה, אישי, בריאות" />
+            <datalist id="categoryOptions"></datalist>
+          </label>
+          <label>
+            סוג מטרה
+            <select name="goalPeriod" id="goalPeriodSelect">
+              <option value="daily" selected>מטרה יומית</option>
+              <option value="weekly">מטרה שבועית</option>
+              <option value="monthly">מטרה חודשית</option>
+              <option value="yearly">מטרה שנתית</option>
+            </select>
+          </label>
+          <div class="category-suggestions" id="categorySuggestions">
+            <button type="button" data-category="אישי">אישי</button>
+            <button type="button" data-category="עבודה">עבודה</button>
+            <button type="button" data-category="בריאות">בריאות</button>
+            <button type="button" data-category="לימודים">לימודים</button>
+            <button type="button" data-category="משפחה">משפחה</button>
+          </div>
+          <label>
+            מרחב עבודה
+            <select name="workspaceId" id="workspaceSelect"></select>
+          </label>
+          <p id="workspaceRuleHint" class="hint hint-inline"></p>
+          <div class="inline-grid">
+            <label>
+              עדיפות
+              <select name="priority">
+                <option value="low">נמוכה</option>
+                <option value="medium" selected>בינונית</option>
+                <option value="high">גבוהה</option>
+              </select>
+            </label>
+            <label>
+              סטטוס התחלתי
+              <select name="status">
+                <option value="todo" selected>לביצוע</option>
+                <option value="in_progress">בתהליך</option>
+                <option value="done">הושלם</option>
+              </select>
+            </label>
+          </div>
+          <label>
+            תאריך יעד
+            <input name="dueDate" type="date" />
+          </label>
+          <button type="submit" class="primary-btn" id="taskSubmitBtn">הוספת משימה</button>
+          <p id="taskFeedback" class="feedback" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

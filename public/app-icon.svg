@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="אייקון מערכת ניהול משימות">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f766e"/>
+      <stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#g)"/>
+  <rect x="62" y="62" width="388" height="388" rx="72" fill="#ffffff" opacity="0.12"/>
+  <rect x="124" y="142" width="104" height="216" rx="28" fill="#f9fbff" opacity="0.95"/>
+  <rect x="284" y="142" width="104" height="216" rx="28" fill="#f9fbff" opacity="0.95"/>
+  <rect x="144" y="175" width="64" height="12" rx="6" fill="#3864c6" opacity="0.72"/>
+  <rect x="144" y="199" width="50" height="12" rx="6" fill="#3864c6" opacity="0.72"/>
+  <rect x="144" y="223" width="42" height="12" rx="6" fill="#3864c6" opacity="0.72"/>
+  <rect x="304" y="175" width="64" height="12" rx="6" fill="#3864c6" opacity="0.72"/>
+  <rect x="304" y="199" width="50" height="12" rx="6" fill="#3864c6" opacity="0.72"/>
+  <rect x="304" y="223" width="42" height="12" rx="6" fill="#3864c6" opacity="0.72"/>
+  <circle cx="256" cy="318" r="78" fill="#ffffff"/>
+  <path d="M225 318 L250 343 L301 284" fill="none" stroke="#0e54ad" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

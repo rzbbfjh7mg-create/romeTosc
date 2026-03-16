@@ -1,0 +1,9 @@
+{
+  "appId": "com.tomlevy.dualmode",
+  "appName": "Dual Mode Task Manager",
+  "webDir": "public",
+  "server": {
+    "url": "https://dual-mode-task-manager.onrender.com",
+    "cleartext": false
+  }
+}
