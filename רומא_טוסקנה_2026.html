@@ -739,8 +739,8 @@ function render(){
       <div class="acts">${actsH}</div>
       ${addPanel}
       <div class="nav">
-        <button class="nav-btn" onclick="go(${cur-1})" ${cur===0?'disabled':''}>יום קודם →</button>
-        <button class="nav-btn" onclick="go(${cur+1})" ${cur===DAYS.length-1?'disabled':''}>← יום הבא</button>
+        <button class="nav-btn" onclick="go(${cur-1})" ${cur===0?'disabled':''}>יום קודם</button>
+        <button class="nav-btn" onclick="go(${cur+1})" ${cur===DAYS.length-1?'disabled':''}>יום הבא</button>
       </div>
     </div>`;
 }
