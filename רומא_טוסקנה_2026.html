@@ -67,6 +67,11 @@ body{
   border-color:transparent;color:#fff;font-weight:600;
   box-shadow:0 10px 22px rgba(217,119,95,.28);
 }
+.tab.drag-over{
+  border-color:rgba(255,255,255,.28);color:#FFF6EA;
+  background:linear-gradient(135deg,rgba(217,119,95,.18),rgba(184,94,78,.22));
+  box-shadow:0 10px 22px rgba(217,119,95,.18);
+}
 .tab-sub{font-size:.62rem;opacity:.8;display:block;}
 
 /* ─── CONTENT ─── */
@@ -109,8 +114,10 @@ body{
   box-shadow:var(--shadow);
   border:1px solid rgba(255,255,255,.04);
   border-right:4px solid transparent;transition:transform .15s, border-color .15s, background .15s, box-shadow .15s;
+  cursor:grab;
 }
 .act:hover{transform:translateX(-2px);background:linear-gradient(180deg,#2A241F,#312923);}
+.act.dragging{opacity:.45;transform:none;cursor:grabbing;}
 .act.sight{
   border-right-color:var(--terra);
   background:linear-gradient(180deg,rgba(217,119,95,.06),rgba(42,35,30,.96));
@@ -175,6 +182,23 @@ body{
 }
 .act-wrap:hover .act-tools,.act-wrap:focus-within .act-tools{
   opacity:1;transform:translateX(0);pointer-events:auto;
+}
+.drop-slot{
+  height:0;opacity:0;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;
+  transition:height .14s ease,opacity .14s ease;
+}
+.drop-slot::before{
+  content:'';width:100%;height:2px;border-radius:999px;
+  background:linear-gradient(90deg,rgba(217,119,95,0),rgba(217,119,95,.76),rgba(217,119,95,0));
+  transform:scaleX(.92);transform-origin:center;
+}
+body.drag-active .drop-slot{
+  height:16px;opacity:.48;pointer-events:auto;
+}
+.drop-slot.on{opacity:1;}
+.drop-slot.on::before{
+  background:linear-gradient(90deg,rgba(255,243,215,0),rgba(255,243,215,.92),rgba(255,243,215,0));
 }
 .act-btn{
   width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;
@@ -334,6 +358,7 @@ let loadError='';
 let isLoading=true;
 let isSaving=false;
 let supabaseClient=null;
+let dragState=null;
 
 function escapeHtml(value=''){
   return String(value)
@@ -572,7 +597,12 @@ function render(){
 
   // tabs
   document.getElementById('tabs').innerHTML=DAYS.map((x,i)=>`
-    <button class="tab${i===cur?' on':''}" onclick="go(${i})">
+    <button
+      class="tab${i===cur?' on':''}"
+      onclick="go(${i})"
+      ondragover="handleDayTabDragOver(event,${i})"
+      ondragleave="handleDayTabDragLeave(event)"
+      ondrop="handleDayTabDrop(event,${i})">
       ${x.day.replace('יום ','')}
       <span class="tab-sub">${x.date}</span>
     </button>
@@ -595,6 +625,14 @@ function render(){
     </div>`:'' ;
 
   // activities
+  const dropSlot=(slotIndex)=>`
+    <div
+      class="drop-slot"
+      ondragover="handleActDragOver(event,${slotIndex})"
+      ondragleave="handleActDragLeave(event)"
+      ondrop="handleActDrop(event,${slotIndex})"></div>
+  `;
+
   const actsH=d.acts.map((a,idx)=>{
     const typeMeta=TYPE_META[a.type]||TYPE_META.sight;
     const isEditing=editingActIndex===idx;
@@ -626,8 +664,13 @@ function render(){
     `:'';
 
     return `
+      ${dropSlot(idx)}
       <div class="act-wrap">
-        <div class="act ${a.type}">
+        <div
+          class="act ${a.type}"
+          draggable="${isSaving?'false':'true'}"
+          ondragstart="handleActDragStart(event,${idx})"
+          ondragend="handleActDragEnd()">
           <span class="act-ico">${a.ico}</span>
           <div class="act-body">
             <div class="act-type">${escapeHtml(typeMeta.label)}</div>
@@ -645,7 +688,7 @@ function render(){
         ${editForm}
       </div>
     `;
-  }).join('');
+  }).join('')+dropSlot(d.acts.length);
 
   const typeOptions=renderTypeOptions();
   const saveNote=saveMessage?`<div class="save-note">${escapeHtml(saveMessage)}</div>`:'';
@@ -714,6 +757,7 @@ function go(i){
   }
 }
 function startEdit(idx){
+  if(dragState) return;
   editingActIndex=idx;
   render();
 }
@@ -724,19 +768,33 @@ function cancelEdit(){
 }
 
 function toggleAddForm(){
+  if(dragState) return;
   DAYS[cur].showForm=!DAYS[cur].showForm;
   render();
 }
 
-async function commitDays(nextDays,successMessage){
+function clearDragVisuals(){
+  document.body.classList.remove('drag-active');
+  document.querySelectorAll('.act.dragging').forEach((el)=>el.classList.remove('dragging'));
+  document.querySelectorAll('.drop-slot.on').forEach((el)=>el.classList.remove('on'));
+  document.querySelectorAll('.tab.drag-over').forEach((el)=>el.classList.remove('drag-over'));
+}
+
+function clearDragState(){
+  dragState=null;
+  clearDragVisuals();
+}
+
+async function commitDays(nextDays,successMessage,nextCurIndex=cur){
   isSaving=true;
+  clearDragState();
   markSaved('שומר ל-Supabase...');
   render();
 
   try{
     const savedDays=await saveDaysToSupabase(nextDays);
     DAYS=savedDays;
-    cur=Math.min(cur,Math.max(DAYS.length-1,0));
+    cur=Math.min(nextCurIndex,Math.max(DAYS.length-1,0));
     markSaved(successMessage);
     return true;
   }catch(error){
@@ -811,22 +869,121 @@ async function moveActivity(idx,direction){
 
   if(targetIndex<0||targetIndex>=acts.length) return;
 
-  const movedTxt=acts[idx]?.txt||'האטרקציה';
-  const nextDays=clone(DAYS);
-  const [movedAct]=nextDays[cur].acts.splice(idx,1);
-  nextDays[cur].acts.splice(targetIndex,0,movedAct);
+  await moveActivityTo(cur,idx,cur,targetIndex);
+}
 
-  if(editingActIndex===idx){
-    editingActIndex=targetIndex;
-  }else if(editingActIndex!==null){
-    if(direction===-1&&editingActIndex>=targetIndex&&editingActIndex<idx){
-      editingActIndex+=1;
-    }else if(direction===1&&editingActIndex<=targetIndex&&editingActIndex>idx){
-      editingActIndex-=1;
+async function moveActivityTo(sourceDayIndex,sourceActIndex,targetDayIndex,targetInsertIndex){
+  if(isSaving) return;
+
+  const sourceAct=DAYS[sourceDayIndex]?.acts?.[sourceActIndex];
+  if(!sourceAct) return;
+
+  const nextDays=clone(DAYS);
+  const [movedAct]=nextDays[sourceDayIndex].acts.splice(sourceActIndex,1);
+  let insertIndex=targetInsertIndex;
+
+  if(sourceDayIndex===targetDayIndex&&targetInsertIndex>sourceActIndex){
+    insertIndex-=1;
+  }
+
+  insertIndex=Math.max(0,Math.min(insertIndex,nextDays[targetDayIndex].acts.length));
+
+  if(sourceDayIndex===targetDayIndex&&insertIndex===sourceActIndex) return;
+
+  nextDays[targetDayIndex].acts.splice(insertIndex,0,movedAct);
+
+  if(sourceDayIndex===cur){
+    if(sourceDayIndex===targetDayIndex){
+      if(editingActIndex===sourceActIndex){
+        editingActIndex=insertIndex;
+      }else if(editingActIndex!==null){
+        if(sourceActIndex<editingActIndex&&editingActIndex<=insertIndex){
+          editingActIndex-=1;
+        }else if(insertIndex<=editingActIndex&&editingActIndex<sourceActIndex){
+          editingActIndex+=1;
+        }
+      }
+    }else{
+      if(editingActIndex===sourceActIndex){
+        editingActIndex=null;
+      }else if(editingActIndex!==null&&editingActIndex>sourceActIndex){
+        editingActIndex-=1;
+      }
     }
   }
 
-  await commitDays(nextDays,`נשמר ב-Supabase: הסדר של "${movedTxt}" עודכן.`);
+  const movedTxt=sourceAct.txt||'האטרקציה';
+  const successMessage=sourceDayIndex===targetDayIndex
+    ? `נשמר ב-Supabase: הסדר של "${movedTxt}" עודכן.`
+    : `נשמר ב-Supabase: "${movedTxt}" הועברה ליום ${DAYS[targetDayIndex].date}.`;
+
+  await commitDays(nextDays,successMessage,targetDayIndex);
+}
+
+function handleActDragStart(event,idx){
+  if(isSaving){
+    event.preventDefault();
+    return;
+  }
+
+  dragState={dayIndex:cur,actIndex:idx};
+  document.body.classList.add('drag-active');
+  event.currentTarget.classList.add('dragging');
+
+  if(event.dataTransfer){
+    event.dataTransfer.effectAllowed='move';
+    event.dataTransfer.setData('text/plain',`${cur}:${idx}`);
+  }
+}
+
+function handleActDragEnd(){
+  clearDragState();
+}
+
+function handleActDragOver(event,insertIndex){
+  if(!dragState||dragState.dayIndex!==cur||isSaving) return;
+  event.preventDefault();
+  if(event.dataTransfer) event.dataTransfer.dropEffect='move';
+  document.querySelectorAll('.drop-slot.on').forEach((el)=>el.classList.remove('on'));
+  event.currentTarget.classList.add('on');
+}
+
+function handleActDragLeave(event){
+  event.currentTarget.classList.remove('on');
+}
+
+async function handleActDrop(event,insertIndex){
+  event.preventDefault();
+  if(!dragState||isSaving) return;
+
+  const {dayIndex,actIndex}=dragState;
+  clearDragState();
+
+  if(dayIndex!==cur) return;
+  await moveActivityTo(dayIndex,actIndex,cur,insertIndex);
+}
+
+function handleDayTabDragOver(event,dayIndex){
+  if(!dragState||isSaving||dayIndex===dragState.dayIndex) return;
+  event.preventDefault();
+  if(event.dataTransfer) event.dataTransfer.dropEffect='move';
+  document.querySelectorAll('.tab.drag-over').forEach((el)=>el.classList.remove('drag-over'));
+  event.currentTarget.classList.add('drag-over');
+}
+
+function handleDayTabDragLeave(event){
+  event.currentTarget.classList.remove('drag-over');
+}
+
+async function handleDayTabDrop(event,dayIndex){
+  event.preventDefault();
+  if(!dragState||isSaving) return;
+
+  const {dayIndex:sourceDayIndex,actIndex}=dragState;
+  clearDragState();
+
+  if(dayIndex===sourceDayIndex) return;
+  await moveActivityTo(sourceDayIndex,actIndex,dayIndex,DAYS[dayIndex].acts.length);
 }
 
 async function deleteActivity(idx){
