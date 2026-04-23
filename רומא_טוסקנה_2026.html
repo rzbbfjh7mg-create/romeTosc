@@ -183,6 +183,11 @@ body{
   font:600 1rem 'Heebo',sans-serif;line-height:1;transition:background .15s,border-color .15s,color .15s;
 }
 .act-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);}
+.act-btn:disabled{
+  opacity:.35;cursor:default;
+  background:rgba(255,255,255,.02);border-color:rgba(255,255,255,.05);color:rgba(243,231,217,.6);
+}
+.act-btn:disabled:hover{background:rgba(255,255,255,.02);border-color:rgba(255,255,255,.05);}
 .act-btn.delete{color:#F0B2A3;border-color:rgba(217,119,95,.2);}
 .act-btn.delete:hover{background:rgba(217,119,95,.12);border-color:rgba(217,119,95,.32);}
 .time-bdg{
@@ -593,6 +598,8 @@ function render(){
   const actsH=d.acts.map((a,idx)=>{
     const typeMeta=TYPE_META[a.type]||TYPE_META.sight;
     const isEditing=editingActIndex===idx;
+    const isFirst=idx===0;
+    const isLast=idx===d.acts.length-1;
     const editForm=isEditing?`
       <form class="edit-form" onsubmit="saveEdit(event,${idx})">
         <div class="field full">
@@ -629,8 +636,10 @@ function render(){
           </div>
           ${a.time?`<span class="time-bdg">${escapeHtml(a.time)}</span>`:''}
           <div class="act-tools">
-            <button class="act-btn" type="button" onclick="startEdit(${idx})" aria-label="עריכת אטרקציה" title="עריכה">✎</button>
-            <button class="act-btn delete" type="button" onclick="deleteActivity(${idx})" aria-label="מחיקת אטרקציה" title="מחיקה">🗑</button>
+            <button class="act-btn" type="button" onclick="moveActivity(${idx},-1)" aria-label="הזזת אטרקציה למעלה" title="הזז למעלה" ${isFirst||isSaving?'disabled':''}>↑</button>
+            <button class="act-btn" type="button" onclick="moveActivity(${idx},1)" aria-label="הזזת אטרקציה למטה" title="הזז למטה" ${isLast||isSaving?'disabled':''}>↓</button>
+            <button class="act-btn" type="button" onclick="startEdit(${idx})" aria-label="עריכת אטרקציה" title="עריכה" ${isSaving?'disabled':''}>✎</button>
+            <button class="act-btn delete" type="button" onclick="deleteActivity(${idx})" aria-label="מחיקת אטרקציה" title="מחיקה" ${isSaving?'disabled':''}>🗑</button>
           </div>
         </div>
         ${editForm}
@@ -793,6 +802,31 @@ async function saveEdit(event,idx){
   };
   editingActIndex=null;
   await commitDays(nextDays,`נשמר ב-Supabase: עודכנה האטרקציה "${txt}".`);
+}
+
+async function moveActivity(idx,direction){
+  if(isSaving) return;
+  const targetIndex=idx+direction;
+  const acts=DAYS[cur]?.acts||[];
+
+  if(targetIndex<0||targetIndex>=acts.length) return;
+
+  const movedTxt=acts[idx]?.txt||'האטרקציה';
+  const nextDays=clone(DAYS);
+  const [movedAct]=nextDays[cur].acts.splice(idx,1);
+  nextDays[cur].acts.splice(targetIndex,0,movedAct);
+
+  if(editingActIndex===idx){
+    editingActIndex=targetIndex;
+  }else if(editingActIndex!==null){
+    if(direction===-1&&editingActIndex>=targetIndex&&editingActIndex<idx){
+      editingActIndex+=1;
+    }else if(direction===1&&editingActIndex<=targetIndex&&editingActIndex>idx){
+      editingActIndex-=1;
+    }
+  }
+
+  await commitDays(nextDays,`נשמר ב-Supabase: הסדר של "${movedTxt}" עודכן.`);
 }
 
 async function deleteActivity(idx){
