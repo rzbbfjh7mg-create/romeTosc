@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🇮🇹 רומא וטוסקנה 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./trip-config.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -239,6 +241,7 @@ body{
   background:rgba(255,255,255,.08);color:var(--cream);font:600 .84rem 'Heebo',sans-serif;
 }
 .add-submit:hover{background:rgba(255,255,255,.14);}
+.add-submit:disabled{opacity:.6;cursor:wait;}
 
 /* ─── NAV ─── */
 .nav{display:flex;justify-content:space-between;margin-top:2rem;}
@@ -294,7 +297,11 @@ body{
 
 <script>
 const LEGACY_STORAGE_KEY='roma-toscana-2026-days';
-const TRIP_API_PATH='/api/trip-data';
+const SUPABASE_URL=(window.TRIP_APP_CONFIG?.supabaseUrl||'').trim();
+const SUPABASE_ANON_KEY=(window.TRIP_APP_CONFIG?.supabaseAnonKey||'').trim();
+const TRIP_TABLE='trip_state';
+const TRIP_ROW_ID='roma-toscana-2026';
+const SEED_DATA_PATH='./data/roma-toscana-2026.json';
 const TYPE_META={
   sight:{label:'אתר',ico:'📍'},
   food:{label:'אוכל',ico:'🍽️'},
@@ -317,10 +324,11 @@ const REGIONS={
 
 let cur=0;
 let editingActIndex=null;
-let saveMessage='טוען את המסלול מהקובץ המקומי...';
+let saveMessage='טוען את המסלול מ-Supabase...';
 let loadError='';
 let isLoading=true;
 let isSaving=false;
+let supabaseClient=null;
 
 function escapeHtml(value=''){
   return String(value)
@@ -383,41 +391,84 @@ function clearLegacyLocalDays(){
   }
 }
 
+function ensureSupabaseConfigured(){
+  if(!SUPABASE_URL||!SUPABASE_ANON_KEY||SUPABASE_URL.includes('YOUR_')||SUPABASE_ANON_KEY.includes('YOUR_')){
+    throw new Error('צריך להגדיר את פרטי Supabase בקובץ trip-config.js לפני פרסום האתר.');
+  }
+  if(!window.supabase?.createClient){
+    throw new Error('ספריית Supabase לא נטענה.');
+  }
+}
+
+function getSupabaseClient(){
+  ensureSupabaseConfigured();
+  if(!supabaseClient){
+    supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
+      auth:{
+        persistSession:false,
+        autoRefreshToken:false,
+        detectSessionInUrl:false,
+      },
+    });
+  }
+  return supabaseClient;
+}
+
 function renderTypeOptions(selectedType='sight'){
   return Object.entries(TYPE_META).map(([type,meta])=>`
     <option value="${type}" ${type===selectedType?'selected':''}>${meta.label}</option>
   `).join('');
 }
 
-async function requestJson(url,options={}){
-  const response=await fetch(url,{
-    ...options,
-    headers:{
-      'Content-Type':'application/json',
-      ...(options.headers||{}),
-    },
-  });
-
-  let payload={};
-  try{
-    payload=await response.json();
-  }catch(_err){
-    payload={};
-  }
-
+async function fetchSeedDays(){
+  const response=await fetch(SEED_DATA_PATH,{cache:'no-store'});
   if(!response.ok){
-    throw new Error(payload.error||'הבקשה לשרת נכשלה');
+    throw new Error('לא הצלחתי לטעון את קובץ ברירת המחדל של המסלול.');
   }
 
-  return payload;
+  const payload=await response.json();
+  return sanitizeDays(payload.days);
 }
 
-async function saveDaysToServer(nextDays){
-  const payload=await requestJson(TRIP_API_PATH,{
-    method:'PUT',
-    body:JSON.stringify({days:sanitizeDays(nextDays)}),
-  });
-  return sanitizeDays(payload.days);
+async function loadDaysFromSupabase(){
+  const supabase=getSupabaseClient();
+  const {data,error}=await supabase
+    .from(TRIP_TABLE)
+    .select('days')
+    .eq('id',TRIP_ROW_ID)
+    .limit(1);
+
+  if(error){
+    throw new Error(error.message||'טעינת המסלול מ-Supabase נכשלה.');
+  }
+
+  const row=data?.[0];
+  if(row?.days){
+    return sanitizeDays(row.days);
+  }
+
+  const seedDays=await fetchSeedDays();
+  return saveDaysToSupabase(seedDays);
+}
+
+async function saveDaysToSupabase(nextDays){
+  const supabase=getSupabaseClient();
+  const payload={
+    id:TRIP_ROW_ID,
+    days:sanitizeDays(nextDays),
+    updated_at:new Date().toISOString(),
+  };
+  const {data,error}=await supabase
+    .from(TRIP_TABLE)
+    .upsert(payload,{onConflict:'id'})
+    .select('days')
+    .single();
+
+  if(error){
+    throw new Error(error.message||'שמירת המסלול ב-Supabase נכשלה.');
+  }
+
+  return sanitizeDays(data.days);
 }
 
 function markSaved(message){
@@ -437,9 +488,9 @@ async function migrateLegacyLocalDays(serverDays){
     return serverDays;
   }
 
-  const migratedDays=await saveDaysToServer(legacyDays);
+  const migratedDays=await saveDaysToSupabase(legacyDays);
   clearLegacyLocalDays();
-  markSaved('הנתונים הקודמים הועברו מהדפדפן לקובץ המקומי.');
+  markSaved('הנתונים הקודמים הועברו מהדפדפן אל Supabase.');
   return migratedDays;
 }
 
@@ -450,19 +501,18 @@ async function init(){
   render();
 
   try{
-    const payload=await requestJson(TRIP_API_PATH,{method:'GET',headers:{Accept:'application/json'}});
-    let loadedDays=sanitizeDays(payload.days);
+    let loadedDays=await loadDaysFromSupabase();
     loadedDays=await migrateLegacyLocalDays(loadedDays);
     DAYS=loadedDays;
     cur=Math.min(cur,Math.max(DAYS.length-1,0));
 
-    if(saveMessage==='טוען את המסלול מהקובץ המקומי...'){
-      markSaved('האטרקציות נשמרות אוטומטית לקובץ המקומי הזה.');
+    if(saveMessage==='טוען את המסלול מ-Supabase...'){
+      markSaved('האטרקציות נשמרות אוטומטית ב-Supabase.');
     }
   }catch(error){
     console.error(error);
     loadError=error.message||'לא הצלחתי לטעון את המסלול';
-    markSaved('אין כרגע חיבור לשרת השמירה המקומי.');
+    markSaved('אין כרגע חיבור ל-Supabase.');
   }finally{
     isLoading=false;
     render();
@@ -478,7 +528,7 @@ function render(){
       <div class="fade">
         <div class="add-box">
           <div class="add-title">טוען את המסלול...</div>
-          <div class="add-sub">מושך את הנתונים מהקובץ המקומי כדי שכל שינוי יישמר באמת.</div>
+          <div class="add-sub">מושך את הנתונים מ-Supabase כדי שכל שינוי יישמר ויהיה זמין מכל מקום.</div>
         </div>
       </div>`;
     return;
@@ -492,7 +542,7 @@ function render(){
           <div class="add-title">לא הצלחתי לטעון את המסלול</div>
           <div class="add-sub">${escapeHtml(loadError)}</div>
           <div class="add-actions" style="margin-top:1rem">
-            <div class="add-status">צריך לפתוח את העמוד דרך השרת המקומי, לא כקובץ רגיל.</div>
+            <div class="add-status">צריך להגדיר את הקובץ trip-config.js ולחבר את האתר ל-Supabase.</div>
             <button class="add-submit" type="button" onclick="init()">נסה שוב</button>
           </div>
         </div>
@@ -590,14 +640,14 @@ function render(){
 
   const typeOptions=renderTypeOptions();
   const saveNote=saveMessage?`<div class="save-note">${escapeHtml(saveMessage)}</div>`:'';
-  const saveButtonLabel=isSaving?'שומר לקובץ...':'שמור ליום הזה';
+  const saveButtonLabel=isSaving?'שומר ל-Supabase...':'שמור ליום הזה';
 
   const addPanel=`
     <div class="add-box">
       <div class="add-head">
         <div>
           <div class="add-title">להוסיף עוד אטרקציה ליום הזה</div>
-          <div class="add-sub">אפשר לבחור סיווג, שעה והערה קצרה. הפריט יישמר ישירות לקובץ המקומי.</div>
+          <div class="add-sub">אפשר לבחור סיווג, שעה והערה קצרה. הפריט יישמר ישירות ב-Supabase.</div>
         </div>
         <button class="add-toggle" type="button" onclick="toggleAddForm()">
           ${d.showForm?'סגור טופס':'＋ הוסף אטרקציה'}
@@ -671,19 +721,19 @@ function toggleAddForm(){
 
 async function commitDays(nextDays,successMessage){
   isSaving=true;
-  markSaved('שומר לקובץ המקומי...');
+  markSaved('שומר ל-Supabase...');
   render();
 
   try{
-    const savedDays=await saveDaysToServer(nextDays);
+    const savedDays=await saveDaysToSupabase(nextDays);
     DAYS=savedDays;
     cur=Math.min(cur,Math.max(DAYS.length-1,0));
     markSaved(successMessage);
     return true;
   }catch(error){
     console.error(error);
-    markSaved(`השמירה לקובץ נכשלה: ${error.message||'שגיאה לא ידועה'}`);
-    alert(`השמירה לקובץ נכשלה: ${error.message||'שגיאה לא ידועה'}`);
+    markSaved(`השמירה ל-Supabase נכשלה: ${error.message||'שגיאה לא ידועה'}`);
+    alert(`השמירה ל-Supabase נכשלה: ${error.message||'שגיאה לא ידועה'}`);
     return false;
   }finally{
     isSaving=false;
@@ -715,7 +765,7 @@ async function addActivity(event){
     ...(note?{note}:{}),
     ...(time?{time}:{}),
   });
-  const saved=await commitDays(nextDays,`נשמר לקובץ: "${txt}" נוסף ליום ${nextDays[cur].date}.`);
+  const saved=await commitDays(nextDays,`נשמר ב-Supabase: "${txt}" נוסף ליום ${nextDays[cur].date}.`);
   if(saved){
     const newStatus=document.getElementById('add-status');
     if(newStatus) newStatus.textContent=`נוספה אטרקציה חדשה בסיווג ${meta.label}.`;
@@ -742,7 +792,7 @@ async function saveEdit(event,idx){
     ...(time?{time}:{}),
   };
   editingActIndex=null;
-  await commitDays(nextDays,`נשמר לקובץ: עודכנה האטרקציה "${txt}".`);
+  await commitDays(nextDays,`נשמר ב-Supabase: עודכנה האטרקציה "${txt}".`);
 }
 
 async function deleteActivity(idx){
@@ -752,7 +802,7 @@ async function deleteActivity(idx){
   nextDays[cur].acts.splice(idx,1);
   if(editingActIndex===idx) editingActIndex=null;
   if(editingActIndex!==null&&editingActIndex>idx) editingActIndex-=1;
-  await commitDays(nextDays,`נשמר לקובץ: "${removedTxt}" נמחק מהיום.`);
+  await commitDays(nextDays,`נשמר ב-Supabase: "${removedTxt}" נמחק מהיום.`);
 }
 
 render();

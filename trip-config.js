@@ -1,0 +1,4 @@
+window.TRIP_APP_CONFIG = {
+  supabaseUrl: "https://urrrdqodyavuuczbcoap.supabase.co",
+  supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVycnJkcW9keWF2dXVjemJjb2FwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MzUwMjAsImV4cCI6MjA5MjUxMTAyMH0.BxA3HC1kIL9V-GEwybd1eUFte6pyvhaiGWWcb7yZjvQ"
+};
