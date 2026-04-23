@@ -1,7 +1,7 @@
 services:
   - type: web
     name: roma-toscana-2026
-    env: node
+    runtime: node
     plan: starter
     buildCommand: npm install
     startCommand: npm run trip:start
@@ -10,7 +10,7 @@ services:
         value: /var/data/roma-toscana-2026.json
       - key: PERSIST_DATA
         value: "true"
-    disks:
-      - name: trip-data
-        mountPath: /var/data
-        sizeGB: 1
+    disk:
+      name: trip-data
+      mountPath: /var/data
+      sizeGB: 1
