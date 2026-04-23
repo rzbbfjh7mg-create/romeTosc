@@ -636,8 +636,6 @@ function render(){
   const actsH=d.acts.map((a,idx)=>{
     const typeMeta=TYPE_META[a.type]||TYPE_META.sight;
     const isEditing=editingActIndex===idx;
-    const isFirst=idx===0;
-    const isLast=idx===d.acts.length-1;
     const editForm=isEditing?`
       <form class="edit-form" onsubmit="saveEdit(event,${idx})">
         <div class="field full">
@@ -679,8 +677,6 @@ function render(){
           </div>
           ${a.time?`<span class="time-bdg">${escapeHtml(a.time)}</span>`:''}
           <div class="act-tools">
-            <button class="act-btn" type="button" onclick="moveActivity(${idx},-1)" aria-label="הזזת אטרקציה למעלה" title="הזז למעלה" ${isFirst||isSaving?'disabled':''}>↑</button>
-            <button class="act-btn" type="button" onclick="moveActivity(${idx},1)" aria-label="הזזת אטרקציה למטה" title="הזז למטה" ${isLast||isSaving?'disabled':''}>↓</button>
             <button class="act-btn" type="button" onclick="startEdit(${idx})" aria-label="עריכת אטרקציה" title="עריכה" ${isSaving?'disabled':''}>✎</button>
             <button class="act-btn delete" type="button" onclick="deleteActivity(${idx})" aria-label="מחיקת אטרקציה" title="מחיקה" ${isSaving?'disabled':''}>🗑</button>
           </div>
@@ -860,16 +856,6 @@ async function saveEdit(event,idx){
   };
   editingActIndex=null;
   await commitDays(nextDays,`נשמר ב-Supabase: עודכנה האטרקציה "${txt}".`);
-}
-
-async function moveActivity(idx,direction){
-  if(isSaving) return;
-  const targetIndex=idx+direction;
-  const acts=DAYS[cur]?.acts||[];
-
-  if(targetIndex<0||targetIndex>=acts.length) return;
-
-  await moveActivityTo(cur,idx,cur,targetIndex);
 }
 
 async function moveActivityTo(sourceDayIndex,sourceActIndex,targetDayIndex,targetInsertIndex){
