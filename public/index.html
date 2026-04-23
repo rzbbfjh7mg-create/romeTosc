@@ -20,120 +20,205 @@
   <body>
     <div class="backdrop" aria-hidden="true"></div>
     <main class="app-shell">
-      <header class="hero">
-        <div class="brand-lockup">
-          <img src="/app-icon.svg" alt="" class="brand-icon" width="40" height="40" />
-          <p class="brand-name">מרכז משימות אישי וצוותי</p>
-        </div>
-        <p class="eyebrow">ניהול משימות במצב כפול</p>
-        <h1>גם משימות פרטיות וגם משימות צוות, במקום אחד</h1>
-        <p class="subtitle">
-          אפשר לנהל יום עבודה אישי בלי רעש, ובמקביל לנהל משימות צוותיות עם שקיפות מלאה.
-        </p>
-        <div class="hero-meta">
-          <p id="userGreeting" class="greeting"></p>
-          <button type="button" id="themeToggleBtn" class="theme-toggle-btn" aria-pressed="false">מצב כהה</button>
-        </div>
-      </header>
-
-      <section class="stats" id="stats"></section>
-
-      <section class="workspace-grid" id="workspaceGrid">
-        <section class="panel workspace-panel" id="personalPanel" data-workspace-type="personal">
-          <div class="workspace-head">
-            <div>
-              <h2>מרחב אישי</h2>
-              <p class="panel-subtitle">משימות פרטיות ומשימות לעצמך.</p>
-            </div>
-            <div class="workspace-actions">
-              <p class="workspace-count" id="personalCount"></p>
-              <div class="workspace-layout-controls">
-                <button
-                  type="button"
-                  class="workspace-move-btn"
-                  id="personalMoveBtn"
-                  aria-label="שינוי מיקום מרחב אישי"
-                >
-                  החלף מיקום
-                </button>
-                <label class="workspace-width-label" for="personalWidthSelect">
-                  רוחב
-                </label>
-                <select id="personalWidthSelect" class="workspace-width-select" aria-label="רוחב מרחב אישי">
-                  <option value="narrow">צר</option>
-                  <option value="normal" selected>רגיל</option>
-                  <option value="wide">רחב</option>
-                </select>
-              </div>
+      <div class="app-layout">
+        <aside class="panel side-menu" id="sideMenu" aria-label="תפריט ניווט ראשי">
+          <div class="side-menu-head">
+            <div class="side-menu-head-top">
+              <p class="side-menu-eyebrow">ניווט מהיר</p>
               <button
                 type="button"
-                class="collapse-toggle-btn"
-                id="personalToggleBtn"
-                aria-label="צמצום מרחב אישי"
-                aria-expanded="true"
+                id="themeToggleBtn"
+                class="theme-toggle-btn side-menu-theme-icon-btn"
+                aria-pressed="false"
+                aria-label="מעבר למצב כהה"
+                title="מעבר למצב כהה"
               >
-                צמצם מרחב
+                <span class="side-menu-action-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M21 12.79A9 9 0 0 1 11.21 3a9 9 0 1 0 9.58 9.79z" />
+                  </svg>
+                </span>
               </button>
-              <button type="button" class="add-task-btn" id="personalAddBtn" aria-label="הוספת משימה אישית">+</button>
             </div>
+            <h2>מעבר בין אזורים</h2>
+            <p class="side-menu-text">אפשר לעבור במהירות בין אישי, עבודה ופעולות נוספות.</p>
           </div>
-          <div class="category-board" id="personalWorkspace"></div>
-        </section>
 
-        <section class="panel workspace-panel" id="workPanel" data-workspace-type="team">
-          <div class="workspace-head">
-            <div>
-              <h2>מרחב עבודה</h2>
-              <p class="panel-subtitle">משימות צוות ומעקב עבודה שוטפת.</p>
+          <nav class="side-menu-nav" id="sectionNav">
+            <button type="button" class="side-menu-link is-active" data-section-target="overviewSection">
+              <span class="side-menu-link-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M4 12h6V5H4zm10 7h6v-9h-6zM4 19h6v-5H4zm10-9h6V5h-6z" />
+                </svg>
+              </span>
+              <span class="side-menu-link-label">סקירה כללית</span>
+              <small>מצב המערכת</small>
+            </button>
+            <button type="button" class="side-menu-link" data-section-target="personalPanel">
+              <span class="side-menu-link-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-3.33 0-6 1.79-6 4v1h12v-1c0-2.21-2.67-4-6-4z" />
+                </svg>
+              </span>
+              <span class="side-menu-link-label">משימות אישיות</span>
+              <small>מרחב אישי</small>
+            </button>
+            <button type="button" class="side-menu-link" data-section-target="workPanel">
+              <span class="side-menu-link-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M9 6V4h6v2h4a2 2 0 0 1 2 2v3H3V8a2 2 0 0 1 2-2zm6 0V5H9v1zm6 7v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5h7v2h4v-2z" />
+                </svg>
+              </span>
+              <span class="side-menu-link-label">משימות עבודה</span>
+              <small>מרחב עבודה</small>
+            </button>
+            <button type="button" class="side-menu-link" data-section-target="additionalSection">
+              <span class="side-menu-link-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                </svg>
+              </span>
+              <span class="side-menu-link-label">פעולות נוספות</span>
+              <small>יצירת מרחב חדש</small>
+            </button>
+          </nav>
+
+          <div class="side-menu-actions">
+            <button type="button" id="sidebarAddTaskBtn" class="side-menu-primary-btn">
+              <span class="side-menu-action-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+                </svg>
+              </span>
+              <span>משימה חדשה</span>
+            </button>
+            <button type="button" id="completedToggleBtn" class="side-menu-secondary-btn" aria-pressed="false">
+              <span class="side-menu-action-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="m9 16.2-3.5-3.5L4 14.2l5 5 11-11-1.5-1.5z" />
+                </svg>
+              </span>
+              <span>הצג משימות שהושלמו</span>
+            </button>
+          </div>
+        </aside>
+
+        <div class="app-content">
+          <header class="hero" id="overviewSection">
+            <div class="brand-lockup">
+              <img src="/app-icon.svg" alt="" class="brand-icon" width="40" height="40" />
+              <p class="brand-name">מרכז משימות אישי וצוותי</p>
             </div>
-            <div class="workspace-actions">
-              <p class="workspace-count" id="workCount"></p>
-              <div class="workspace-layout-controls">
-                <button
-                  type="button"
-                  class="workspace-move-btn"
-                  id="workMoveBtn"
-                  aria-label="שינוי מיקום מרחב עבודה"
-                >
-                  החלף מיקום
-                </button>
-                <label class="workspace-width-label" for="workWidthSelect">
-                  רוחב
-                </label>
-                <select id="workWidthSelect" class="workspace-width-select" aria-label="רוחב מרחב עבודה">
-                  <option value="narrow">צר</option>
-                  <option value="normal" selected>רגיל</option>
-                  <option value="wide">רחב</option>
-                </select>
+            <p class="eyebrow">ניהול משימות במצב כפול</p>
+            <h1>גם משימות פרטיות וגם משימות צוות, במקום אחד</h1>
+            <p class="subtitle">
+              אפשר לנהל יום עבודה אישי בלי רעש, ובמקביל לנהל משימות צוותיות עם שקיפות מלאה.
+            </p>
+            <div class="hero-meta">
+              <p id="userGreeting" class="greeting"></p>
+            </div>
+          </header>
+
+          <section class="stats" id="stats"></section>
+
+          <section class="workspace-grid" id="workspaceGrid">
+            <section class="panel workspace-panel" id="personalPanel" data-workspace-type="personal">
+              <div class="workspace-head">
+                <div>
+                  <h2>מרחב אישי</h2>
+                  <p class="panel-subtitle">משימות פרטיות ומשימות לעצמך.</p>
+                </div>
+                <div class="workspace-actions">
+                  <p class="workspace-count" id="personalCount"></p>
+                  <div class="workspace-layout-controls">
+                    <button
+                      type="button"
+                      class="workspace-move-btn"
+                      id="personalMoveBtn"
+                      aria-label="שינוי מיקום מרחב אישי"
+                    >
+                      החלף מיקום
+                    </button>
+                    <label class="workspace-width-label" for="personalWidthSelect">
+                      רוחב
+                    </label>
+                    <select id="personalWidthSelect" class="workspace-width-select" aria-label="רוחב מרחב אישי">
+                      <option value="narrow">צר</option>
+                      <option value="normal" selected>רגיל</option>
+                      <option value="wide">רחב</option>
+                    </select>
+                  </div>
+                  <button
+                    type="button"
+                    class="collapse-toggle-btn"
+                    id="personalToggleBtn"
+                    aria-label="צמצום מרחב אישי"
+                    aria-expanded="true"
+                  >
+                    צמצם מרחב
+                  </button>
+                  <button type="button" class="add-task-btn" id="personalAddBtn" aria-label="הוספת משימה אישית">+</button>
+                </div>
               </div>
-              <button
-                type="button"
-                class="collapse-toggle-btn"
-                id="workToggleBtn"
-                aria-label="צמצום מרחב עבודה"
-                aria-expanded="true"
-              >
-                צמצם מרחב
-              </button>
-              <button type="button" class="add-task-btn" id="workAddBtn" aria-label="הוספת משימת עבודה">+</button>
-            </div>
-          </div>
-          <div class="category-board" id="workWorkspace"></div>
-        </section>
-      </section>
+              <div class="category-board" id="personalWorkspace"></div>
+            </section>
 
-      <section class="forms-grid">
-        <form id="workspaceForm" class="panel form-card">
-          <h3>יצירת מרחב עבודה חדש</h3>
-          <label>
-            שם המרחב
-            <input name="name" type="text" minlength="2" placeholder="לדוגמה: צוות מוצר" required />
-          </label>
-          <p class="hint">המרחב האישי כבר קיים עבורך. כאן מוסיפים מרחבי עבודה משותפים.</p>
-          <button type="submit" class="secondary-btn" id="workspaceSubmitBtn">יצירת מרחב</button>
-          <p id="workspaceFeedback" class="feedback" role="status" aria-live="polite"></p>
-        </form>
-      </section>
+            <section class="panel workspace-panel" id="workPanel" data-workspace-type="team">
+              <div class="workspace-head">
+                <div>
+                  <h2>מרחב עבודה</h2>
+                  <p class="panel-subtitle">משימות צוות ומעקב עבודה שוטפת.</p>
+                </div>
+                <div class="workspace-actions">
+                  <p class="workspace-count" id="workCount"></p>
+                  <div class="workspace-layout-controls">
+                    <button
+                      type="button"
+                      class="workspace-move-btn"
+                      id="workMoveBtn"
+                      aria-label="שינוי מיקום מרחב עבודה"
+                    >
+                      החלף מיקום
+                    </button>
+                    <label class="workspace-width-label" for="workWidthSelect">
+                      רוחב
+                    </label>
+                    <select id="workWidthSelect" class="workspace-width-select" aria-label="רוחב מרחב עבודה">
+                      <option value="narrow">צר</option>
+                      <option value="normal" selected>רגיל</option>
+                      <option value="wide">רחב</option>
+                    </select>
+                  </div>
+                  <button
+                    type="button"
+                    class="collapse-toggle-btn"
+                    id="workToggleBtn"
+                    aria-label="צמצום מרחב עבודה"
+                    aria-expanded="true"
+                  >
+                    צמצם מרחב
+                  </button>
+                  <button type="button" class="add-task-btn" id="workAddBtn" aria-label="הוספת משימת עבודה">+</button>
+                </div>
+              </div>
+              <div class="category-board" id="workWorkspace"></div>
+            </section>
+          </section>
+
+          <section class="forms-grid" id="additionalSection">
+            <form id="workspaceForm" class="panel form-card">
+              <h3>יצירת מרחב עבודה חדש</h3>
+              <label>
+                שם המרחב
+                <input name="name" type="text" minlength="2" placeholder="לדוגמה: צוות מוצר" required />
+              </label>
+              <p class="hint">המרחב האישי כבר קיים עבורך. כאן מוסיפים מרחבי עבודה משותפים.</p>
+              <button type="submit" class="secondary-btn" id="workspaceSubmitBtn">יצירת מרחב</button>
+              <p id="workspaceFeedback" class="feedback" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+        </div>
+      </div>
     </main>
 
     <div id="taskModal" class="task-modal is-hidden" aria-hidden="true">

@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
+    "trip:start": "node src/trip-server.js",
+    "trip:dev": "node --watch src/trip-server.js",
     "test": "node --test",
     "icons:generate": "node scripts/generate-icons.mjs",
     "cap:add:ios": "npx cap add ios",

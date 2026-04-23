@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🇮🇹 רומא וטוסקנה 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --terra:#D9775F;--terra-dk:#8E2D28;--cream:#F3E7D9;--brown:#F6E9D8;
+  --gold:#D9A94D;--rome:#FF8A6B;--tuscany:#87C86F;--blue-dk:#8AB4E8;--blue:#5D88C7;
+  --bg:#14110F;--bg-soft:#1B1714;--panel:#211B17;--panel-2:#2A231E;
+  --border:#45382F;--muted:#BBA491;--shadow:0 14px 35px rgba(0,0,0,.32);
+}
+body{
+  font-family:'Heebo','Segoe UI',Arial,sans-serif;
+  background:
+    radial-gradient(circle at top,rgba(217,169,77,.12),transparent 35%),
+    linear-gradient(180deg,#171310 0%,#100D0B 100%);
+  color:var(--brown);min-height:100vh;color-scheme:dark;
+}
+
+/* ─── HEADER ─── */
+.hdr{
+  background:linear-gradient(145deg,#381615 0%,#6A2B25 42%,#8A5423 100%);
+  padding:2.2rem 1.5rem 3rem;text-align:center;position:relative;overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.hdr::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 20% 80%,rgba(255,255,255,.08) 0%,transparent 60%),
+             radial-gradient(ellipse at 80% 20%,rgba(255,220,170,.08) 0%,transparent 60%);
+}
+.hdr::after{
+  content:'';position:absolute;bottom:-1px;left:0;right:0;height:36px;
+  background:var(--bg);clip-path:ellipse(55% 100% at 50% 100%);
+}
+.hdr-flag{font-size:2.4rem;display:block;margin-bottom:.5rem;position:relative;}
+.hdr-title{
+  font-family:'Heebo','Segoe UI',Arial,sans-serif;font-size:2.55rem;font-weight:800;
+  color:#FFF6EA;letter-spacing:.01em;position:relative;line-height:1.05;
+}
+.hdr-dates{color:rgba(255,246,234,.75);font-size:.82rem;margin-top:.45rem;font-weight:300;letter-spacing:.15em;position:relative;}
+.progress-wrap{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(0,0,0,.35);}
+.progress-bar{height:100%;background:linear-gradient(90deg,#F1D2A4,#FFF3D7);transition:width .45s ease;}
+
+/* ─── TABS ─── */
+.tabs{
+  background:rgba(24,19,16,.92);display:flex;overflow-x:auto;padding:.8rem .75rem;
+  gap:.4rem;scrollbar-width:none;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  backdrop-filter:blur(10px);
+}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{
+  flex-shrink:0;padding:.45rem .9rem;border-radius:20px;
+  border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.02);
+  color:rgba(255,245,232,.65);font-family:'Heebo',sans-serif;font-size:.78rem;
+  cursor:pointer;transition:all .2s;text-align:center;line-height:1.4;
+}
+.tab:hover{border-color:rgba(255,255,255,.28);color:#fff;background:rgba(255,255,255,.05);}
+.tab.on{
+  background:linear-gradient(135deg,var(--terra),#B85E4E);
+  border-color:transparent;color:#fff;font-weight:600;
+  box-shadow:0 10px 22px rgba(217,119,95,.28);
+}
+.tab-sub{font-size:.62rem;opacity:.8;display:block;}
+
+/* ─── CONTENT ─── */
+.content{padding:1.8rem 1rem 4rem;max-width:640px;margin:0 auto;}
+
+.day-loc{
+  font-family:'Heebo','Segoe UI',Arial,sans-serif;font-size:2rem;
+  font-weight:800;line-height:1.1;margin-bottom:.35rem;
+}
+.loc-rome{color:var(--rome);}
+.loc-tuscany{color:var(--tuscany);}
+.loc-transit{color:#E5B05E;}
+.loc-return{color:var(--blue-dk);}
+
+.day-meta{font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:1.2rem;}
+.chip{font-size:.67rem;padding:.15rem .55rem;border-radius:20px;font-weight:700;letter-spacing:.03em;}
+.chip-rome{background:rgba(255,138,107,.18);color:#FFB29E;}
+.chip-tuscany{background:rgba(135,200,111,.18);color:#B7E6A7;}
+.chip-transit{background:rgba(229,176,94,.18);color:#F0C684;}
+.chip-return{background:rgba(138,180,232,.18);color:#BBD4F3;}
+.chip-day{background:rgba(255,255,255,.06);color:var(--muted);}
+
+/* ─── HOTEL STRIP ─── */
+.hotel{
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.025));
+  border:1px solid var(--border);border-radius:14px;
+  padding:.7rem 1rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:.75rem;
+  box-shadow:var(--shadow);
+}
+.hotel-ico{font-size:1.3rem;}
+.hotel-lbl{font-size:.68rem;color:var(--muted);}
+.hotel-nm{font-size:.83rem;font-weight:600;color:var(--cream);}
+
+/* ─── ACTIVITIES ─── */
+.acts{display:flex;flex-direction:column;gap:.55rem;}
+.act-wrap{display:flex;flex-direction:column;gap:.45rem;}
+.act{
+  background:linear-gradient(180deg,var(--panel),var(--panel-2));border-radius:14px;padding:.85rem 1rem;
+  display:flex;align-items:center;gap:.75rem;
+  box-shadow:var(--shadow);
+  border:1px solid rgba(255,255,255,.04);
+  border-right:4px solid transparent;transition:transform .15s, border-color .15s, background .15s, box-shadow .15s;
+}
+.act:hover{transform:translateX(-2px);background:linear-gradient(180deg,#2A241F,#312923);}
+.act.sight{
+  border-right-color:var(--terra);
+  background:linear-gradient(180deg,rgba(217,119,95,.06),rgba(42,35,30,.96));
+  box-shadow:0 14px 35px rgba(0,0,0,.22);
+}
+.act.food{
+  border-right-color:var(--gold);
+  background:linear-gradient(180deg,rgba(217,169,77,.06),rgba(42,35,30,.96));
+  box-shadow:0 14px 35px rgba(0,0,0,.22);
+}
+.act.market{
+  border-right-color:var(--tuscany);
+  background:linear-gradient(180deg,rgba(135,200,111,.06),rgba(42,35,30,.96));
+  box-shadow:0 14px 35px rgba(0,0,0,.22);
+}
+.act.wine{
+  border-right-color:#B46AC0;
+  background:linear-gradient(180deg,rgba(180,106,192,.06),rgba(42,35,30,.96));
+  box-shadow:0 14px 35px rgba(0,0,0,.22);
+}
+.act.explore{
+  border-right-color:#69A7DA;
+  background:linear-gradient(180deg,rgba(105,167,218,.06),rgba(42,35,30,.96));
+  box-shadow:0 14px 35px rgba(0,0,0,.22);
+}
+.act.transport{
+  border-right-color:#B7B7B7;
+  background:linear-gradient(180deg,rgba(183,183,183,.05),rgba(42,35,30,.96));
+  box-shadow:0 14px 35px rgba(0,0,0,.22);
+}
+.act.hotel-act{
+  border-right-color:#E4BC74;
+  background:linear-gradient(180deg,rgba(228,188,116,.06),rgba(42,35,30,.96));
+  box-shadow:0 14px 35px rgba(0,0,0,.22);
+}
+.act.flight{background:linear-gradient(135deg,#1C3A60,#2E5C8A);border-right:none;}
+
+.act-ico{font-size:1.25rem;flex-shrink:0;width:28px;text-align:center;}
+.act-body{flex:1;min-width:0;}
+.act-type{
+  display:inline-flex;align-items:center;gap:.35rem;
+  padding:.14rem .48rem;border-radius:999px;margin-bottom:.35rem;
+  font-size:.62rem;font-weight:600;letter-spacing:.02em;
+  border:1px solid transparent;
+}
+.act.sight .act-type{background:rgba(255,138,107,.08);border-color:rgba(255,138,107,.18);color:#E7A796;}
+.act.food .act-type{background:rgba(217,169,77,.08);border-color:rgba(217,169,77,.18);color:#DDBD81;}
+.act.market .act-type{background:rgba(135,200,111,.08);border-color:rgba(135,200,111,.18);color:#B6D9A9;}
+.act.wine .act-type{background:rgba(180,106,192,.08);border-color:rgba(180,106,192,.18);color:#D2A8D9;}
+.act.explore .act-type{background:rgba(105,167,218,.08);border-color:rgba(105,167,218,.18);color:#A8CBE4;}
+.act.transport .act-type{background:rgba(183,183,183,.07);border-color:rgba(183,183,183,.16);color:#CECECE;}
+.act.hotel-act .act-type{background:rgba(228,188,116,.08);border-color:rgba(228,188,116,.16);color:#DFC596;}
+.act.flight .act-type{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);color:#F4F7FD;}
+.act-txt{font-size:.88rem;font-weight:500;color:var(--cream);}
+.act.flight .act-txt{color:#fff;}
+.act-note{font-size:.72rem;color:var(--muted);margin-top:.1rem;}
+.act.flight .act-note{color:rgba(255,255,255,.7);}
+.act-tools{
+  display:flex;flex-direction:column;gap:.35rem;flex-shrink:0;
+  opacity:0;transform:translateX(6px);pointer-events:none;
+  transition:opacity .15s,transform .15s;
+}
+.act-wrap:hover .act-tools,.act-wrap:focus-within .act-tools{
+  opacity:1;transform:translateX(0);pointer-events:auto;
+}
+.act-btn{
+  width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid rgba(255,255,255,.09);border-radius:999px;padding:0;
+  background:rgba(255,255,255,.04);color:var(--cream);cursor:pointer;
+  font:600 1rem 'Heebo',sans-serif;line-height:1;transition:background .15s,border-color .15s,color .15s;
+}
+.act-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);}
+.act-btn.delete{color:#F0B2A3;border-color:rgba(217,119,95,.2);}
+.act-btn.delete:hover{background:rgba(217,119,95,.12);border-color:rgba(217,119,95,.32);}
+.time-bdg{
+  font-size:.72rem;font-weight:700;padding:.2rem .5rem;border-radius:6px;
+  flex-shrink:0;background:rgba(255,255,255,.2);color:#fff;white-space:nowrap;
+}
+.act:not(.flight) .time-bdg{background:rgba(255,255,255,.08);color:#E8D8C4;}
+.edit-form{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;
+  padding:.9rem 1rem;border-radius:14px;background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.06);box-shadow:0 10px 24px rgba(0,0,0,.16);
+}
+.edit-actions{grid-column:1 / -1;display:flex;align-items:center;justify-content:flex-end;gap:.6rem;}
+.edit-cancel{
+  border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:.68rem 1rem;
+  background:transparent;color:var(--muted);cursor:pointer;font:600 .82rem 'Heebo',sans-serif;
+}
+.edit-cancel:hover{background:rgba(255,255,255,.05);color:var(--cream);}
+
+/* ─── ADD ACTIVITY ─── */
+.add-box{
+  margin-top:1rem;padding:1rem;border-radius:16px;
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.025));
+  border:1px solid var(--border);box-shadow:var(--shadow);
+}
+.add-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:.85rem;}
+.add-title{font-size:.95rem;font-weight:700;color:var(--cream);}
+.add-sub{font-size:.72rem;color:var(--muted);margin-top:.2rem;}
+.add-toggle{
+  border:none;border-radius:999px;padding:.55rem 1rem;cursor:pointer;
+  background:linear-gradient(135deg,var(--terra),#B85E4E);color:#fff;
+  font:600 .8rem 'Heebo',sans-serif;box-shadow:0 10px 22px rgba(217,119,95,.22);
+}
+.add-form{display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;}
+.add-form.on{display:grid;}
+.field{display:flex;flex-direction:column;gap:.35rem;}
+.field.full{grid-column:1 / -1;}
+.field label{font-size:.72rem;color:var(--muted);}
+.field input,.field select{
+  width:100%;padding:.7rem .8rem;border-radius:10px;border:1px solid rgba(255,255,255,.09);
+  background:rgba(8,7,6,.28);color:var(--cream);font:500 .86rem 'Heebo',sans-serif;
+}
+.field input::placeholder{color:#8E7D71;}
+.field input:focus,.field select:focus{
+  outline:none;border-color:rgba(217,119,95,.75);box-shadow:0 0 0 3px rgba(217,119,95,.16);
+}
+.add-actions{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:.75rem;}
+.add-status{font-size:.74rem;color:var(--muted);min-height:1.1rem;}
+.save-note{
+  margin-top:.85rem;padding:.6rem .8rem;border-radius:10px;
+  background:rgba(135,200,111,.08);border:1px solid rgba(135,200,111,.16);
+  color:#C9E6BD;font-size:.75rem;
+}
+.add-submit{
+  border:none;border-radius:10px;padding:.7rem 1.1rem;cursor:pointer;
+  background:rgba(255,255,255,.08);color:var(--cream);font:600 .84rem 'Heebo',sans-serif;
+}
+.add-submit:hover{background:rgba(255,255,255,.14);}
+
+/* ─── NAV ─── */
+.nav{display:flex;justify-content:space-between;margin-top:2rem;}
+.nav-btn{
+  padding:.6rem 1.4rem;border-radius:8px;border:2px solid var(--terra);
+  background:transparent;color:#F0B2A3;font-family:'Heebo',sans-serif;
+  font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;
+}
+.nav-btn:hover{background:var(--terra);color:#fff;box-shadow:0 10px 22px rgba(217,119,95,.2);}
+.nav-btn:disabled{border-color:rgba(255,255,255,.08);color:#7E6D61;cursor:default;}
+.nav-btn:disabled:hover{background:transparent;color:#7E6D61;box-shadow:none;}
+
+/* ─── LEGEND ─── */
+.legend{
+  display:flex;flex-wrap:wrap;gap:.4rem .9rem;
+  padding:1rem;background:rgba(24,19,16,.92);border-top:1px solid rgba(255,255,255,.08);
+  font-size:.7rem;color:var(--muted);
+}
+.leg-item{display:flex;align-items:center;gap:.3rem;}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.fade{animation:fadeUp .3s ease;}
+
+@media (max-width:560px){
+  .add-head,.add-actions,.nav,.edit-actions{flex-direction:column;align-items:stretch;}
+  .add-form,.edit-form{grid-template-columns:1fr;}
+  .act{flex-wrap:wrap;}
+  .act-tools{width:100%;flex-direction:row;justify-content:flex-end;opacity:1;transform:none;pointer-events:auto;}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <span class="hdr-flag">🇮🇹</span>
+  <h1 class="hdr-title">רומא וטוסקנה</h1>
+  <div class="hdr-dates">30 באפריל – 8 במאי 2026 &nbsp;·&nbsp; 9 ימים</div>
+  <div class="progress-wrap"><div class="progress-bar" id="prog"></div></div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+<div class="content" id="content"></div>
+
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:var(--terra)"></div>אתר</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--gold)"></div>אוכל</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--tuscany)"></div>שוק</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#7A3A7A"></div>יין</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#4A7AA0"></div>שיטוט</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#8A8A8A"></div>תחבורה</div>
+</div>
+
+<script>
+const LEGACY_STORAGE_KEY='roma-toscana-2026-days';
+const TRIP_API_PATH='/api/trip-data';
+const TYPE_META={
+  sight:{label:'אתר',ico:'📍'},
+  food:{label:'אוכל',ico:'🍽️'},
+  market:{label:'שוק',ico:'🛍️'},
+  wine:{label:'יין',ico:'🍷'},
+  explore:{label:'שיטוט',ico:'🗺️'},
+  transport:{label:'תחבורה',ico:'🚕'},
+  'hotel-act':{label:'מלון / ריזורט',ico:'🏨'},
+  flight:{label:'טיסה',ico:'✈️'},
+};
+
+let DAYS=[];
+
+const REGIONS={
+  rome:{lbl:"רומא",cls:"chip-rome",loc:"loc-rome"},
+  tuscany:{lbl:"טוסקנה",cls:"chip-tuscany",loc:"loc-tuscany"},
+  transit:{lbl:"מעבר",cls:"chip-transit",loc:"loc-transit"},
+  return:{lbl:"חזרה",cls:"chip-return",loc:"loc-return"},
+};
+
+let cur=0;
+let editingActIndex=null;
+let saveMessage='טוען את המסלול מהקובץ המקומי...';
+let loadError='';
+let isLoading=true;
+let isSaving=false;
+
+function escapeHtml(value=''){
+  return String(value)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#39;");
+}
+
+function clone(value){
+  return JSON.parse(JSON.stringify(value));
+}
+
+function sanitizeActivity(activity){
+  const type=(activity?.type||'sight').toString();
+  const meta=TYPE_META[type]||TYPE_META.sight;
+  const normalized={
+    ico:typeof activity?.ico==='string'&&activity.ico.trim()?activity.ico.trim():meta.ico,
+    txt:(activity?.txt||'').toString().trim(),
+    type,
+  };
+
+  if(activity?.note?.toString().trim()) normalized.note=activity.note.toString().trim();
+  if(activity?.time?.toString().trim()) normalized.time=activity.time.toString().trim();
+
+  return normalized;
+}
+
+function sanitizeDay(day){
+  return {
+    date:(day?.date||'').toString().trim(),
+    day:(day?.day||'').toString().trim(),
+    loc:(day?.loc||'').toString().trim(),
+    region:(day?.region||'').toString().trim(),
+    hotel:typeof day?.hotel==='string'&&day.hotel.trim()?day.hotel.trim():null,
+    acts:Array.isArray(day?.acts)?day.acts.map(sanitizeActivity):[],
+  };
+}
+
+function sanitizeDays(days){
+  return Array.isArray(days)?days.map(sanitizeDay):[];
+}
+
+function getLegacyLocalDays(){
+  try{
+    const raw=localStorage.getItem(LEGACY_STORAGE_KEY);
+    if(!raw) return null;
+    return sanitizeDays(JSON.parse(raw));
+  }catch(_err){
+    return null;
+  }
+}
+
+function clearLegacyLocalDays(){
+  try{
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+  }catch(_err){
+    // ignore legacy cleanup errors
+  }
+}
+
+function renderTypeOptions(selectedType='sight'){
+  return Object.entries(TYPE_META).map(([type,meta])=>`
+    <option value="${type}" ${type===selectedType?'selected':''}>${meta.label}</option>
+  `).join('');
+}
+
+async function requestJson(url,options={}){
+  const response=await fetch(url,{
+    ...options,
+    headers:{
+      'Content-Type':'application/json',
+      ...(options.headers||{}),
+    },
+  });
+
+  let payload={};
+  try{
+    payload=await response.json();
+  }catch(_err){
+    payload={};
+  }
+
+  if(!response.ok){
+    throw new Error(payload.error||'הבקשה לשרת נכשלה');
+  }
+
+  return payload;
+}
+
+async function saveDaysToServer(nextDays){
+  const payload=await requestJson(TRIP_API_PATH,{
+    method:'PUT',
+    body:JSON.stringify({days:sanitizeDays(nextDays)}),
+  });
+  return sanitizeDays(payload.days);
+}
+
+function markSaved(message){
+  saveMessage=message;
+}
+
+async function migrateLegacyLocalDays(serverDays){
+  const legacyDays=getLegacyLocalDays();
+
+  if(!legacyDays||!legacyDays.length){
+    clearLegacyLocalDays();
+    return serverDays;
+  }
+
+  if(JSON.stringify(legacyDays)===JSON.stringify(serverDays)){
+    clearLegacyLocalDays();
+    return serverDays;
+  }
+
+  const migratedDays=await saveDaysToServer(legacyDays);
+  clearLegacyLocalDays();
+  markSaved('הנתונים הקודמים הועברו מהדפדפן לקובץ המקומי.');
+  return migratedDays;
+}
+
+async function init(){
+  isLoading=true;
+  loadError='';
+  editingActIndex=null;
+  render();
+
+  try{
+    const payload=await requestJson(TRIP_API_PATH,{method:'GET',headers:{Accept:'application/json'}});
+    let loadedDays=sanitizeDays(payload.days);
+    loadedDays=await migrateLegacyLocalDays(loadedDays);
+    DAYS=loadedDays;
+    cur=Math.min(cur,Math.max(DAYS.length-1,0));
+
+    if(saveMessage==='טוען את המסלול מהקובץ המקומי...'){
+      markSaved('האטרקציות נשמרות אוטומטית לקובץ המקומי הזה.');
+    }
+  }catch(error){
+    console.error(error);
+    loadError=error.message||'לא הצלחתי לטעון את המסלול';
+    markSaved('אין כרגע חיבור לשרת השמירה המקומי.');
+  }finally{
+    isLoading=false;
+    render();
+  }
+}
+
+function render(){
+  document.getElementById('prog').style.width=DAYS.length?`${cur/(DAYS.length-1||1)*100}%`:'0%';
+
+  if(isLoading){
+    document.getElementById('tabs').innerHTML='';
+    document.getElementById('content').innerHTML=`
+      <div class="fade">
+        <div class="add-box">
+          <div class="add-title">טוען את המסלול...</div>
+          <div class="add-sub">מושך את הנתונים מהקובץ המקומי כדי שכל שינוי יישמר באמת.</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if(loadError){
+    document.getElementById('tabs').innerHTML='';
+    document.getElementById('content').innerHTML=`
+      <div class="fade">
+        <div class="add-box">
+          <div class="add-title">לא הצלחתי לטעון את המסלול</div>
+          <div class="add-sub">${escapeHtml(loadError)}</div>
+          <div class="add-actions" style="margin-top:1rem">
+            <div class="add-status">צריך לפתוח את העמוד דרך השרת המקומי, לא כקובץ רגיל.</div>
+            <button class="add-submit" type="button" onclick="init()">נסה שוב</button>
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if(!DAYS.length){
+    document.getElementById('tabs').innerHTML='';
+    document.getElementById('content').innerHTML=`
+      <div class="fade">
+        <div class="add-box">
+          <div class="add-title">אין ימים להצגה</div>
+          <div class="add-sub">קובץ המסלול לא כולל כרגע נתונים.</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const d=DAYS[cur];
+  const r=REGIONS[d.region];
+
+  // tabs
+  document.getElementById('tabs').innerHTML=DAYS.map((x,i)=>`
+    <button class="tab${i===cur?' on':''}" onclick="go(${i})">
+      ${x.day.replace('יום ','')}
+      <span class="tab-sub">${x.date}</span>
+    </button>
+  `).join('');
+
+  // scroll active tab
+  setTimeout(()=>{
+    const t=document.querySelectorAll('.tab')[cur];
+    if(t) t.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  },60);
+
+  // hotel
+  const hotelH=d.hotel?`
+    <div class="hotel">
+      <span class="hotel-ico">🏨</span>
+      <div>
+        <div class="hotel-lbl">לינה</div>
+        <div class="hotel-nm">${d.hotel}</div>
+      </div>
+    </div>`:'' ;
+
+  // activities
+  const actsH=d.acts.map((a,idx)=>{
+    const typeMeta=TYPE_META[a.type]||TYPE_META.sight;
+    const isEditing=editingActIndex===idx;
+    const editForm=isEditing?`
+      <form class="edit-form" onsubmit="saveEdit(event,${idx})">
+        <div class="field full">
+          <label for="edit-name-${idx}">שם האטרקציה</label>
+          <input id="edit-name-${idx}" name="txt" type="text" value="${escapeHtml(a.txt)}" required>
+        </div>
+        <div class="field">
+          <label for="edit-type-${idx}">סיווג</label>
+          <select id="edit-type-${idx}" name="type">${renderTypeOptions(a.type)}</select>
+        </div>
+        <div class="field">
+          <label for="edit-time-${idx}">שעה</label>
+          <input id="edit-time-${idx}" name="time" type="text" value="${escapeHtml(a.time||'')}">
+        </div>
+        <div class="field full">
+          <label for="edit-note-${idx}">הערה</label>
+          <input id="edit-note-${idx}" name="note" type="text" value="${escapeHtml(a.note||'')}">
+        </div>
+        <div class="edit-actions">
+          <button class="edit-cancel" type="button" onclick="cancelEdit()">ביטול</button>
+          <button class="add-submit" type="submit">שמור שינויים</button>
+        </div>
+      </form>
+    `:'';
+
+    return `
+      <div class="act-wrap">
+        <div class="act ${a.type}">
+          <span class="act-ico">${a.ico}</span>
+          <div class="act-body">
+            <div class="act-type">${escapeHtml(typeMeta.label)}</div>
+            <div class="act-txt">${escapeHtml(a.txt)}</div>
+            ${a.note?`<div class="act-note">${escapeHtml(a.note)}</div>`:''}
+          </div>
+          ${a.time?`<span class="time-bdg">${escapeHtml(a.time)}</span>`:''}
+          <div class="act-tools">
+            <button class="act-btn" type="button" onclick="startEdit(${idx})" aria-label="עריכת אטרקציה" title="עריכה">✎</button>
+            <button class="act-btn delete" type="button" onclick="deleteActivity(${idx})" aria-label="מחיקת אטרקציה" title="מחיקה">🗑</button>
+          </div>
+        </div>
+        ${editForm}
+      </div>
+    `;
+  }).join('');
+
+  const typeOptions=renderTypeOptions();
+  const saveNote=saveMessage?`<div class="save-note">${escapeHtml(saveMessage)}</div>`:'';
+  const saveButtonLabel=isSaving?'שומר לקובץ...':'שמור ליום הזה';
+
+  const addPanel=`
+    <div class="add-box">
+      <div class="add-head">
+        <div>
+          <div class="add-title">להוסיף עוד אטרקציה ליום הזה</div>
+          <div class="add-sub">אפשר לבחור סיווג, שעה והערה קצרה. הפריט יישמר ישירות לקובץ המקומי.</div>
+        </div>
+        <button class="add-toggle" type="button" onclick="toggleAddForm()">
+          ${d.showForm?'סגור טופס':'＋ הוסף אטרקציה'}
+        </button>
+      </div>
+      <form class="add-form${d.showForm?' on':''}" onsubmit="addActivity(event)">
+        <div class="field full">
+          <label for="act-name">שם האטרקציה</label>
+          <input id="act-name" name="txt" type="text" placeholder="למשל: Villa Borghese" required>
+        </div>
+        <div class="field">
+          <label for="act-type">סיווג</label>
+          <select id="act-type" name="type">${typeOptions}</select>
+        </div>
+        <div class="field">
+          <label for="act-time">שעה</label>
+          <input id="act-time" name="time" type="text" placeholder="למשל: 18:30">
+        </div>
+        <div class="field full">
+          <label for="act-note">הערה</label>
+          <input id="act-note" name="note" type="text" placeholder="למשל: להזמין כרטיסים מראש">
+        </div>
+        <div class="add-actions">
+          <div class="add-status" id="add-status"></div>
+          <button class="add-submit" type="submit" ${isSaving?'disabled':''}>${saveButtonLabel}</button>
+        </div>
+      </form>
+      ${saveNote}
+    </div>
+  `;
+
+  document.getElementById('content').innerHTML=`
+    <div class="fade">
+      <div class="day-loc ${r.loc}">${d.loc}</div>
+      <div class="day-meta">
+        <span>${d.day}, ${d.date}</span>
+        <span class="chip ${r.cls}">${r.lbl}</span>
+        <span class="chip chip-day">יום ${cur+1} מתוך ${DAYS.length}</span>
+      </div>
+      ${hotelH}
+      <div class="acts">${actsH}</div>
+      ${addPanel}
+      <div class="nav">
+        <button class="nav-btn" onclick="go(${cur-1})" ${cur===0?'disabled':''}>יום קודם →</button>
+        <button class="nav-btn" onclick="go(${cur+1})" ${cur===DAYS.length-1?'disabled':''}>← יום הבא</button>
+      </div>
+    </div>`;
+}
+
+function go(i){
+  if(i>=0&&i<DAYS.length){
+    cur=i;
+    editingActIndex=null;
+    render();
+  }
+}
+function startEdit(idx){
+  editingActIndex=idx;
+  render();
+}
+
+function cancelEdit(){
+  editingActIndex=null;
+  render();
+}
+
+function toggleAddForm(){
+  DAYS[cur].showForm=!DAYS[cur].showForm;
+  render();
+}
+
+async function commitDays(nextDays,successMessage){
+  isSaving=true;
+  markSaved('שומר לקובץ המקומי...');
+  render();
+
+  try{
+    const savedDays=await saveDaysToServer(nextDays);
+    DAYS=savedDays;
+    cur=Math.min(cur,Math.max(DAYS.length-1,0));
+    markSaved(successMessage);
+    return true;
+  }catch(error){
+    console.error(error);
+    markSaved(`השמירה לקובץ נכשלה: ${error.message||'שגיאה לא ידועה'}`);
+    alert(`השמירה לקובץ נכשלה: ${error.message||'שגיאה לא ידועה'}`);
+    return false;
+  }finally{
+    isSaving=false;
+    render();
+  }
+}
+
+async function addActivity(event){
+  event.preventDefault();
+  const form=event.target;
+  const formData=new FormData(form);
+  const txt=(formData.get('txt')||'').toString().trim();
+  const type=(formData.get('type')||'sight').toString();
+  const note=(formData.get('note')||'').toString().trim();
+  const time=(formData.get('time')||'').toString().trim();
+  const status=document.getElementById('add-status');
+
+  if(!txt){
+    if(status) status.textContent='צריך למלא שם אטרקציה לפני שמירה.';
+    return;
+  }
+
+  const meta=TYPE_META[type]||TYPE_META.sight;
+  const nextDays=clone(DAYS);
+  nextDays[cur].acts.push({
+    ico:meta.ico,
+    txt,
+    type,
+    ...(note?{note}:{}),
+    ...(time?{time}:{}),
+  });
+  const saved=await commitDays(nextDays,`נשמר לקובץ: "${txt}" נוסף ליום ${nextDays[cur].date}.`);
+  if(saved){
+    const newStatus=document.getElementById('add-status');
+    if(newStatus) newStatus.textContent=`נוספה אטרקציה חדשה בסיווג ${meta.label}.`;
+  }
+}
+
+async function saveEdit(event,idx){
+  event.preventDefault();
+  const formData=new FormData(event.target);
+  const txt=(formData.get('txt')||'').toString().trim();
+  const type=(formData.get('type')||'sight').toString();
+  const note=(formData.get('note')||'').toString().trim();
+  const time=(formData.get('time')||'').toString().trim();
+
+  if(!txt) return;
+
+  const meta=TYPE_META[type]||TYPE_META.sight;
+  const nextDays=clone(DAYS);
+  nextDays[cur].acts[idx]={
+    ico:meta.ico,
+    txt,
+    type,
+    ...(note?{note}:{}),
+    ...(time?{time}:{}),
+  };
+  editingActIndex=null;
+  await commitDays(nextDays,`נשמר לקובץ: עודכנה האטרקציה "${txt}".`);
+}
+
+async function deleteActivity(idx){
+  if(!confirm('למחוק את האטרקציה הזאת?')) return;
+  const removedTxt=DAYS[cur].acts[idx]?.txt||'האטרקציה';
+  const nextDays=clone(DAYS);
+  nextDays[cur].acts.splice(idx,1);
+  if(editingActIndex===idx) editingActIndex=null;
+  if(editingActIndex!==null&&editingActIndex>idx) editingActIndex-=1;
+  await commitDays(nextDays,`נשמר לקובץ: "${removedTxt}" נמחק מהיום.`);
+}
+
+render();
+init();
+</script>
+</body>
+</html>

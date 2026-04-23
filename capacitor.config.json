@@ -3,7 +3,7 @@
   "appName": "Dual Mode Task Manager",
   "webDir": "public",
   "server": {
-    "url": "https://dual-mode-task-manager.onrender.com",
-    "cleartext": false
+    "url": "http://127.0.0.1:3000",
+    "cleartext": true
   }
 }

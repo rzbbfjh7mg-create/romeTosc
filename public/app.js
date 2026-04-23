@@ -16,7 +16,9 @@ const state = {
       personal: "normal",
       team: "normal"
     },
-    draggingTaskId: null
+    draggingTaskId: null,
+    currentSection: "overviewSection",
+    showCompletedTasks: false
   }
 };
 
@@ -57,8 +59,14 @@ const goalPeriodLabels = {
 
 const THEME_STORAGE_KEY = "dual_mode_theme";
 const LAYOUT_STORAGE_KEY = "dual_mode_layout";
+const SECTION_TARGET_IDS = ["overviewSection", "personalPanel", "workPanel", "additionalSection"];
 
 const elements = {
+  sectionNav: document.querySelector("#sectionNav"),
+  sidebarAddTaskBtn: document.querySelector("#sidebarAddTaskBtn"),
+  completedToggleBtn: document.querySelector("#completedToggleBtn"),
+  overviewSection: document.querySelector("#overviewSection"),
+  additionalSection: document.querySelector("#additionalSection"),
   stats: document.querySelector("#stats"),
   workspaceGrid: document.querySelector("#workspaceGrid"),
   personalPanel: document.querySelector("#personalPanel"),
@@ -177,7 +185,10 @@ function readStoredLayout() {
       team: WORKSPACE_WIDTH_VALUES.has(parsed?.workspaceWidths?.team) ? parsed.workspaceWidths.team : "normal"
     };
 
-    return { workspaceCollapsed, goalCollapsed, workspaceOrder: uniqueOrder, workspaceWidths };
+    const currentSection = SECTION_TARGET_IDS.includes(parsed?.currentSection) ? parsed.currentSection : "overviewSection";
+    const showCompletedTasks = Boolean(parsed?.showCompletedTasks);
+
+    return { workspaceCollapsed, goalCollapsed, workspaceOrder: uniqueOrder, workspaceWidths, currentSection, showCompletedTasks };
   } catch {
     return null;
   }
@@ -191,7 +202,9 @@ function saveLayout() {
         workspaceCollapsed: state.ui.workspaceCollapsed,
         goalCollapsed: state.ui.goalCollapsed,
         workspaceOrder: state.ui.workspaceOrder,
-        workspaceWidths: state.ui.workspaceWidths
+        workspaceWidths: state.ui.workspaceWidths,
+        currentSection: state.ui.currentSection,
+        showCompletedTasks: state.ui.showCompletedTasks
       })
     );
   } catch {
@@ -260,11 +273,33 @@ function getInitialTheme() {
   return "light";
 }
 
+function getThemeToggleIconMarkup(isDark) {
+  if (isDark) {
+    return `
+      <span class="side-menu-action-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M6.76 4.84 5.35 3.43 3.93 4.85l1.41 1.41zM1 13h3v-2H1zm10-9h2V1h-2zm7.66 1.85 1.41-1.41-1.41-1.42-1.42 1.41zM17.24 19.16l1.42 1.41 1.41-1.41-1.41-1.42zM20 13h3v-2h-3zM12 6a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm-1 17h2v-3h-2zm-7.07-3.93 1.42 1.42 1.41-1.41-1.41-1.42z" />
+        </svg>
+      </span>
+    `;
+  }
+
+  return `
+    <span class="side-menu-action-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" focusable="false">
+        <path d="M21 12.79A9 9 0 0 1 11.21 3a9 9 0 1 0 9.58 9.79z" />
+      </svg>
+    </span>
+  `;
+}
+
 function applyTheme(theme, { persist = true } = {}) {
   const isDark = theme === "dark";
   document.body.classList.toggle("dark-theme", isDark);
-  elements.themeToggleBtn.textContent = isDark ? "מצב בהיר" : "מצב כהה";
+  elements.themeToggleBtn.innerHTML = getThemeToggleIconMarkup(isDark);
   elements.themeToggleBtn.setAttribute("aria-pressed", String(isDark));
+  elements.themeToggleBtn.setAttribute("aria-label", isDark ? "מעבר למצב בהיר" : "מעבר למצב כהה");
+  elements.themeToggleBtn.setAttribute("title", isDark ? "מעבר למצב בהיר" : "מעבר למצב כהה");
 
   if (persist) {
     saveTheme(isDark ? "dark" : "light");
@@ -425,6 +460,81 @@ function refreshWorkspaceOptions() {
   updateWorkspaceRuleHint();
 }
 
+function setActiveSectionLink(targetId) {
+  if (!elements.sectionNav) {
+    return;
+  }
+
+  const links = elements.sectionNav.querySelectorAll(".side-menu-link[data-section-target]");
+  links.forEach((link) => {
+    const isActive = link.dataset.sectionTarget === targetId;
+    link.classList.toggle("is-active", isActive);
+    link.setAttribute("aria-current", isActive ? "page" : "false");
+  });
+}
+
+function applyCompletedToggle() {
+  if (!elements.completedToggleBtn) {
+    return;
+  }
+
+  const isShowingCompleted = state.ui.showCompletedTasks;
+  elements.completedToggleBtn.textContent = isShowingCompleted ? "הסתר משימות שהושלמו" : "הצג משימות שהושלמו";
+  elements.completedToggleBtn.setAttribute("aria-pressed", String(isShowingCompleted));
+}
+
+function applySectionView() {
+  const isOverview = state.ui.currentSection === "overviewSection";
+  const isPersonal = state.ui.currentSection === "personalPanel";
+  const isWork = state.ui.currentSection === "workPanel";
+  const isAdditional = state.ui.currentSection === "additionalSection";
+
+  elements.overviewSection?.classList.toggle("content-section-hidden", !isOverview);
+  elements.stats.classList.toggle("content-section-hidden", !isOverview);
+  elements.additionalSection?.classList.toggle("content-section-hidden", !isOverview && !isAdditional);
+  elements.workspaceGrid.classList.toggle("content-section-hidden", isAdditional);
+  elements.workspaceGrid.classList.toggle("single-panel-view", isPersonal || isWork);
+  elements.personalPanel.classList.toggle("content-section-hidden", isWork || isAdditional);
+  elements.workPanel.classList.toggle("content-section-hidden", isPersonal || isAdditional);
+}
+
+function setSectionView(targetId) {
+  const nextTargetId = SECTION_TARGET_IDS.includes(targetId) ? targetId : "overviewSection";
+  const target = document.getElementById(nextTargetId);
+  if (!target) {
+    return;
+  }
+
+  if (nextTargetId === "personalPanel" && isWorkspaceCollapsed("personal")) {
+    setWorkspaceCollapsed("personal", false);
+  }
+
+  if (nextTargetId === "workPanel" && isWorkspaceCollapsed("team")) {
+    setWorkspaceCollapsed("team", false);
+  }
+
+  state.ui.currentSection = nextTargetId;
+  saveLayout();
+  applySectionView();
+  setActiveSectionLink(nextTargetId);
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function initSectionNavigation() {
+  if (!elements.sectionNav) {
+    return;
+  }
+
+  elements.sectionNav.addEventListener("click", (event) => {
+    const button = event.target.closest(".side-menu-link[data-section-target]");
+    if (!button) {
+      return;
+    }
+
+    setSectionView(button.dataset.sectionTarget || "overviewSection");
+  });
+}
+
 function applyWorkspaceVisibility(type) {
   const isPersonal = type === "personal";
   const panel = isPersonal ? elements.personalPanel : elements.workPanel;
@@ -468,8 +578,9 @@ function applyWorkspaceLayout() {
   elements.personalWidthSelect.value = state.ui.workspaceWidths.personal;
   elements.workWidthSelect.value = state.ui.workspaceWidths.team;
 
-  elements.personalMoveBtn.textContent = order[0] === "personal" ? "העבר ימינה" : "העבר שמאלה";
-  elements.workMoveBtn.textContent = order[0] === "team" ? "העבר ימינה" : "העבר שמאלה";
+  elements.personalMoveBtn.textContent = order[0] === "personal" ? "העבר שמאלה" : "העבר ימינה";
+  elements.workMoveBtn.textContent = order[0] === "team" ? "העבר שמאלה" : "העבר ימינה";
+  applySectionView();
 }
 
 function renderStats() {
@@ -500,7 +611,7 @@ function renderStats() {
 
 function taskTemplate(task) {
   const safeDescription = task.description ? escapeHtml(task.description) : "ללא תיאור";
-  const category = escapeHtml(task.category || "כללי");
+  const goalPeriod = task.goalPeriod ?? "daily";
   const metaItems = [];
   const hasExplicitPriority = task.priority && task.priority !== "medium";
 
@@ -513,10 +624,12 @@ function taskTemplate(task) {
   }
 
   const metaSection = metaItems.length
-    ? `<div class="meta-row">${metaItems.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>`
+    ? `<div class="meta-row">${metaItems
+        .map((item) => `<span class="meta-item">${escapeHtml(item)}</span>`)
+        .join("")}</div>`
     : "";
 
-  return `<article class="task-card" draggable="true" data-task-id="${escapeHtml(task.id)}">
+  return `<article class="task-card${task.status === "done" ? " is-completed" : ""}" draggable="true" data-task-id="${escapeHtml(task.id)}" data-goal-period="${escapeHtml(goalPeriod)}">
     <div class="task-top">
       <input
         type="checkbox"
@@ -527,10 +640,9 @@ function taskTemplate(task) {
       />
       <div class="task-main">
         <h3 class="task-title">${escapeHtml(task.title)}</h3>
-        <p class="task-description">${safeDescription}</p>
+        <p class="task-description${task.description ? "" : " is-muted"}">${safeDescription}</p>
       </div>
       <div class="task-card-actions">
-        <span class="category-pill">${category}</span>
         <button type="button" class="quick-delete-btn" data-task-delete-id="${escapeHtml(task.id)}" aria-label="מחיקת משימה">
           מחק
         </button>
@@ -553,6 +665,13 @@ function taskTemplate(task) {
 
 function sortTasksForDisplay(tasks) {
   return [...tasks].sort((a, b) => {
+    const aDone = a.status === "done";
+    const bDone = b.status === "done";
+
+    if (aDone !== bDone) {
+      return aDone ? 1 : -1;
+    }
+
     if (!a.dueDate && !b.dueDate) {
       return a.title.localeCompare(b.title, "he");
     }
@@ -570,8 +689,13 @@ function sortTasksForDisplay(tasks) {
 }
 
 function renderWorkspaceBoard(type, container, countElement) {
-  const tasks = state.tasks.filter((task) => workspaceById(task.workspaceId)?.type === type && task.status !== "done");
-  countElement.textContent = `${tasks.length} משימות`;
+  const allWorkspaceTasks = state.tasks.filter((task) => workspaceById(task.workspaceId)?.type === type);
+  const tasks = allWorkspaceTasks.filter((task) => state.ui.showCompletedTasks || task.status !== "done");
+  const completedCount = allWorkspaceTasks.filter((task) => task.status === "done").length;
+  const openCount = allWorkspaceTasks.length - completedCount;
+  countElement.textContent = state.ui.showCompletedTasks
+    ? `${openCount} פתוחות · ${completedCount} הושלמו`
+    : `${openCount} משימות`;
   const goals = state.goalPeriods.length ? state.goalPeriods : defaultGoalPeriods;
   const workspaceId = findWorkspaceIdByType(type);
 
@@ -595,6 +719,9 @@ function renderWorkspaceBoard(type, container, countElement) {
         : `${goalTasks.length} משימות`;
       const goalToggleLabel = goalIsCollapsed ? "הצג" : "הסתר";
       const goalContentVisibilityClass = goalIsCollapsed ? "is-hidden" : "";
+      const emptyMessage = state.ui.showCompletedTasks
+        ? "אין משימות להצגה במטרה הזו."
+        : "אין משימות פתוחות במטרה הזו.";
 
       return `
         <section class="category-group">
@@ -634,7 +761,7 @@ function renderWorkspaceBoard(type, container, countElement) {
               ${
                 goalTasks.length
                   ? goalTasks.map(taskTemplate).join("")
-                  : '<article class="empty-card"><p class="empty">אין משימות במטרה הזו.</p></article>'
+                  : `<article class="empty-card"><p class="empty">${emptyMessage}</p></article>`
               }
             </div>
           </div>
@@ -732,6 +859,8 @@ async function bootstrap() {
     state.ui.goalCollapsed = savedLayout.goalCollapsed;
     state.ui.workspaceOrder = savedLayout.workspaceOrder;
     state.ui.workspaceWidths = savedLayout.workspaceWidths;
+    state.ui.currentSection = savedLayout.currentSection;
+    state.ui.showCompletedTasks = savedLayout.showCompletedTasks;
   }
 
   elements.userGreeting.textContent = `שלום ${state.user.name}, זה מצב המשימות שלך כרגע.`;
@@ -739,8 +868,11 @@ async function bootstrap() {
   refreshWorkspaceOptions();
   refreshCategoryOptions();
   refreshGoalPeriodOptions();
+  applyCompletedToggle();
   renderStats();
   renderBoards();
+  applySectionView();
+  setActiveSectionLink(state.ui.currentSection);
 }
 
 elements.workspaceSelect.addEventListener("change", () => {
@@ -753,6 +885,17 @@ elements.personalAddBtn.addEventListener("click", () => {
 
 elements.workAddBtn.addEventListener("click", () => {
   openTaskMenu("team");
+});
+
+elements.sidebarAddTaskBtn?.addEventListener("click", () => {
+  openTaskMenu("personal");
+});
+
+elements.completedToggleBtn?.addEventListener("click", () => {
+  state.ui.showCompletedTasks = !state.ui.showCompletedTasks;
+  saveLayout();
+  applyCompletedToggle();
+  renderBoards();
 });
 
 elements.personalToggleBtn.addEventListener("click", () => {
@@ -1134,6 +1277,7 @@ elements.workspaceGrid.addEventListener("dragend", (event) => {
 });
 
 applyTheme(getInitialTheme(), { persist: false });
+initSectionNavigation();
 
 bootstrap().catch((error) => {
   setFeedback(elements.taskFeedback, `טעינת המערכת נכשלה: ${error.message}`, "error");
